@@ -14,9 +14,9 @@ struct RequestView: View {
             VStack(spacing: 20) {
                 if !vm.isInvited {
                     Text("Request an Invitation for beta testing").foregroundColor(.gray)
-                    CustomTextField(title: "Full Name", placeHolder: "At lease 3 characters", text: $vm.name, showError: vm.nameCheck, onChange: vm.onChangeName)
-                    CustomTextField(title: "Email", placeHolder: "example@example.com", text: $vm.email, showError: vm.emailCheck, onChange: vm.onEmailChange)
-                    CustomTextField(title: "Confirm Email", placeHolder: "Same with your email", text: $vm.confirmEmail, showError: vm.confirmCheck, onChange: vm.onConfirmChange)
+                    CustomTextField(title: "Full Name", placeHolder: "At lease 3 characters", text: $vm.name, showError: vm.nameCheck)
+                    CustomTextField(title: "Email", placeHolder: "example@example.com", text: $vm.email, showError: vm.emailCheck)
+                    CustomTextField(title: "Confirm Email", placeHolder: "Same with your email", text: $vm.confirmEmail, showError: vm.confirmCheck)
                     Spacer()
                     Button(action:{ vm.onSubmitClick() }) {
                         Text("Send").font(.system(size: 20, weight: .bold, design: .rounded))
@@ -65,7 +65,6 @@ struct CustomTextField: View {
     @State var onEdit = false
     @Binding var text: String
     var showError: Bool
-    var onChange: () -> ()
     var body: some View {
         VStack(alignment: .leading) {
             Text(title).font(.system(.subheadline, design: .rounded)).foregroundColor(Color(.secondaryLabel))
@@ -86,9 +85,6 @@ struct CustomTextField: View {
             .font(.system(size: 15, weight: .regular, design: .rounded))
             .padding(.horizontal)
             .background(RoundedRectangle(cornerRadius: 10).stroke(self.onEdit ? Color.orange : Color.gray.opacity(0.2), lineWidth: 1))
-            .onChange(of: text) { _ in
-                onChange()
-            }
         }
     }
 }

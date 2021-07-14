@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class RequestViewModel: ObservableObject {
     @Published var isInvited: Bool {
@@ -30,27 +31,51 @@ class RequestViewModel: ObservableObject {
     var isSuccess = true
     var message = ""
     
+    private var anyCancellable: Set<AnyCancellable> = []
+    
     init() {
         self.isInvited = UserDefaults.standard.bool(forKey: "isInvited")
+        
+        $name.receive(on: RunLoop.main)
+            .map { name in
+                let trimmedString = name.trimmingCharacters(in: .whitespaces)
+                return trimmedString.count >= 3
+            }
+            .assign(to: \.nameCheck, on: self)
+            .store(in: &anyCancellable)
+        
+        $email.receive(on: RunLoop.main)
+            .map { email in
+                return email.isValidEmail
+            }
+            .assign(to: \.emailCheck, on: self)
+            .store(in: &anyCancellable)
+        
+        Publishers.CombineLatest($email, $confirmEmail).receive(on: RunLoop.main)
+            .map { email, confirmEmail in
+                return !confirmEmail.isEmpty && (email == confirmEmail)
+            }
+            .assign(to: \.confirmCheck, on: self)
+            .store(in: &anyCancellable)
     }
     
-    func onChangeName() {
-        let trimmedString = name.trimmingCharacters(in: .whitespaces)
-        print(trimmedString)
-        self.nameCheck = trimmedString.count >= 3
-    }
-    
-    func onEmailChange() {
-        self.emailCheck = email.isValidEmail
-        onConfirmChange()
-        print(email.isValidEmail)
-    }
-    
-    func onConfirmChange() {
-        if !confirmEmail.isEmpty {
-            self.confirmCheck = self.email == self.confirmEmail
-        }
-    }
+//    func onChangeName() {
+//        let trimmedString = name.trimmingCharacters(in: .whitespaces)
+//        print(trimmedString)
+//        self.nameCheck = trimmedString.count >= 3
+//    }
+//
+//    func onEmailChange() {
+//        self.emailCheck = email.isValidEmail
+//        onConfirmChange()
+//        print(email.isValidEmail)
+//    }
+//
+//    func onConfirmChange() {
+//        if !confirmEmail.isEmpty {
+//            self.confirmCheck = self.email == self.confirmEmail
+//        }
+//    }
     
     func onSubmitClick() {
         let urlString = "https://us-central1-blinkapp-684c1.cloudfunctions.net/fakeAuth"
